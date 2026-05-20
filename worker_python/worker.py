@@ -21,7 +21,7 @@ print(f" Logs directory: {LOGS_DIR}")
 print("====================================================")
 
 def validate_json(file_path):
-    """Valida se o arquivo contém JSON válido"""
+    # Valida se o arquivo contém JSON válido
     try:
         with open(file_path, 'r') as f:
             json.load(f)
@@ -31,12 +31,12 @@ def validate_json(file_path):
         return False
 
 def process_task(task_file):
-    """Processa uma tarefa de forma segura"""
+    # Processa uma tarefa de forma segura
     task_path = QUEUE_DIR / task_file
     
     # Valida se o arquivo existe e contém JSON válido
     if not task_path.exists():
-        print(f"[WORKER ⚠️] File disappeared: {task_file}")
+        print(f"[WORKER (ATENTION)] File disappeared: {task_file}")
         return False
     
     if not validate_json(task_path):
@@ -64,11 +64,11 @@ def process_task(task_file):
         with open(log_file_path, 'w') as lf:
             json.dump(log_data, lf, indent=4)
             
-        print(f"[WORKER ✔️] Analytics completed. Audit log saved at processed_logs/log_{task_file}")
+        print(f"[WORKER (CORRECT)] Analytics completed. Audit log saved at processed_logs/log_{task_file}")
         return True
         
     except Exception as e:
-        print(f"[WORKER ❌] Error processing task {task_file}: {e}")
+        print(f"[WORKER X] Error processing task {task_file}: {e}")
         return False
     finally:
         # Remove o arquivo da fila com verificação
@@ -78,15 +78,15 @@ def process_task(task_file):
                 print("[WORKER] Queue slot cleared and released.")
                 print("-" * 60)
         except Exception as e:
-            print(f"[WORKER ⚠️] Failed to remove {task_file}: {e}")
+            print(f"[WORKER (ATENTION)] Failed to remove {task_file}: {e}")
 
 def main():
-    """Loop principal que monitora a fila"""
+    # Loop principal que monitora a fila
     while True:
         try:
             # Lista arquivos JSON na fila
             if not QUEUE_DIR.exists():
-                print("[WORKER ⚠️] Queue directory not found, retrying...")
+                print("[WORKER (ATENTION)] Queue directory not found, retrying...")
                 time.sleep(1)
                 continue
             
@@ -101,7 +101,7 @@ def main():
                 time.sleep(0.5)
                 
         except Exception as e:
-            print(f"[WORKER ❌] Critical error in main loop: {e}")
+            print(f"[WORKER X] Critical error in main loop: {e}")
             time.sleep(1)
 
 if __name__ == "__main__":
@@ -111,5 +111,5 @@ if __name__ == "__main__":
         print("\n[WORKER] Shutting down gracefully...")
         sys.exit(0)
     except Exception as e:
-        print(f"[WORKER ❌] Fatal error: {e}")
+        print(f"[WORKER X] Fatal error: {e}")
         sys.exit(1)
