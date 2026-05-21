@@ -1,71 +1,67 @@
-# Python
+# 🚀 MicroQueue: High-Performance Distributed Request Broker
 
-import os
+O **MicroQueue** é um ecossistema de microsserviços desacoplados e orientados a eventos, projetado para demonstrar conceitos avançados de alta performance, concorrência nativa e governança de segurança. 
 
-readme_content = """# 🚀 MicroQueue: High-Performance Event-Driven Request Broker
-
-O **MicroQueue** é um ecossistema de microsserviços desacoplados e orientados a eventos, projetado para demonstrar uma arquitetura de alta performance, escalabilidade e concorrência híbrida. O projeto combina a velocidade bruta e a eficiência de execução de concorrência do **Go (Golang 1.23+)** na camada de ingestão de dados com a flexibilidade analítica do **Python 3** na camada de processamento e telemetria.
+Originalmente concebido como uma arquitetura híbrida, o projeto foi refatorado para operar **100% em Go (Golang 1.23+)** na camada de backend (Gateway e Workers) para maximizar a eficiência de I/O e o isolamento de memória, utilizando uma interface reativa minimalista em **Vanilla JS** no Frontend e persistência relacional estruturada via **SQLite**.
 
 ---
 
 ## 🏗️ Desenho Arquitetural do Ecossistema
 
-O sistema opera sob o modelo de **Arquitetura Orientada a Eventos (EDA)** através de um canal de trânsito assíncrono por sistema de arquivos (*Shared File-Buffer Queue*), garantindo que o cliente web nunca sofra bloqueios ou gargalos de processamento.
+O sistema opera sob o modelo de **Arquitetura Orientada a Eventos (EDA)** com processamento assíncrono utilizando o próprio sistema de arquivos local (*Shared File-Buffer Queue*) como barramento de trânsito. Isso garante um desacoplamento total: a camada de ingestão nunca bloqueia o cliente web, independentemente da carga.
 
-File generated successfully at README.md
-
-```
-[ CLIENTE WEB / API TEST ]
+```text
+[ FRONTEND WEB INTERFACE ] (Navegador Windows / Vanilla JS)
             │
-    (POST JSON Payload)
+    (Fetch API - HTTP POST)
             ▼
 ┌─────────────────────────────────────────────────────────┐
 │ 1. HIGH-SPEED INGESTION GATEWAY (Go 1.23+)              │
-│    - Escuta na porta HTTP :8080.                        │
-│    - Gera IDs únicos temporais em nanossegundos.        │
-│    - Valida o método e persiste em bytes no Buffer.     │
+│    - Escuta na porta HTTP :8080 (WSL2 / Linux).         │
+│    - Filtro Anti-DoS: Limita requisições a 5MB.         │
+│    - Validação de Integridade: Sanitização de JSON.      │
 │    - Retorna status '202 Accepted' em < 1 milissegundo. │
 └───────────────────────────┬─────────────────────────────┘
                             │
                (Escrita Assíncrona em Disco)
                             ▼
-                    [ shared_queue/ ]  ◄──── (Buffer Espelhado FIFO)
+                    [ shared_queue/ ]  ◄──── (Fila Transicional FIFO)
                             │
-               (Varredura e Consumo Temporal)
-                            ▼
-┌─────────────────────────────────────────────────────────┐
-│ 2. ASYNC ANALYTICAL WORKER (Python 3)                   │
-│    - Polling ativo e ordenado dos jobs pendentes.       │
-│    - Processa e extrai métricas de negócios do JSON.    │
-│    - Salva logs imutáveis de auditoria estruturada.     │
-│    - Purga o slot consumido da fila de trânsito.        │
-└─────────────────────────────────────────────────────────┘
+               (Concorrência via Polling Ativo)
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+┌───────────────────────────┐ ┌───────────────────────────┐
+│ 2. DISTRIBUTED WORKER #1  │ │ 3. DISTRIBUTED WORKER #2  │ (Motores em Go)
+│ - Consome jobs ordenados. │ │ - Consome jobs ordenados. │
+│ - Evita colisões nativas. │ │ - Evita colisões nativas. │
+└─────────────┬─────────────┘ └─────────────┬─────────────┘
+              │                             │
+              └──────────────┬──────────────┘
+                             ▼
+                 [ SQLite DATABASE (.db) ] ◄─── (Persistência Imutável)
 ```
-
 ---
 # 📂 Árvore de Diretórios do Projeto
-```
+
 MicroQueue/
 │
+├── frontend/
+│   └── index.html           # Dashboard reativo para disparo de payloads (Vanilla JS)
+│
 ├── gateway_go/
-│   ├── go.mod               # Gerenciador de módulos e dependências do Go
-│   └── main.go              # Servidor HTTP Gateway de Ingestão de Alta Velocidade (Go)
+│   ├── go.mod               # Módulo do Gateway de Ingestão
+│   └── main.go              # Servidor HTTP Gateway com CORS e Proteção Anti-DoS (Go)
 │
-├── worker_python/
-│   └── worker.py            # Motor assíncrono de consumo analítico da fila (Python)
+├── worker_go/
+│   ├── go.mod               # Módulo do Worker e Driver SQL
+│   └── worker.go            # Motor concorrente de consumo FIFO e escrita relacional (Go)
 │
-├── shared_queue/            # Pasta compartilhada para trânsito de payloads JSON (Ignorada pelo Git)
-├── processed_logs/          # Logs permanentes e imutáveis de auditoria de dados (Ignorada pelo Git)
+├── legacy_python/           # Histórico de evolução técnica da primeira versão (Python)
 │
-├── .gitignore               # Proteção severa de dados locais e isolamento de binários
-└── README.md                # Documentação técnica de arquitetura do portfólio
-```
----
-# ⚡ Simulação e Teste de Carga (Disparo de Eventos)
-Com os dois serviços rodando ativamente nas suas respectivas abas, abra uma terceira aba de terminal e envie payloads dinâmicos simulando requisições de clientes reais utilizando o utilitário curl:
+├── shared_queue/            # Buffer temporário de trânsito de payloads JSON (Ignorado pelo Git)
+├── database.db              # Arquivo unificado do Banco de Dados SQLite (Ignorado pelo Git)
+│
+├── .gitignore               # Regras severas de governança e proteção contra vazamento de dados
+└── README.md                # Documentação arquitetural do ecossistema
 
-```
-curl -X POST http://localhost:8080/enqueue \
-  -H "Content-Type: application/json" \
-  -d '{"client": "Davi_Passos", "score": 9.8, "status": "approved", "event_origin": "WSL2_Terminal"}'
-```
+---
