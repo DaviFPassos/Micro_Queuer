@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MicroQueue | Client Ingestion Panel</title>
+    <style>
+        body {
+            background-color: #121214;
+            color: #e1e1e6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #202024;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 { margin-top: 0; color: #00b37e; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #a8a8b3; }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #121214;
+            background-color: #121214;
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus { border-color: #00b37e; outline: none; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #00b37e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #00875f; }
+        #response-box {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+            word-break: break-all;
+        }
+        .success { background-color: rgba(0, 179, 126, 0.1); border: 1px solid #00b37e; color: #00b37e; }
+        .error { background-color: rgba(247, 90, 90, 0.1); border: 1px solid #f75a5a; color: #f75a5a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚀 MicroQueue Ingestion</h2>
+    <form id="queueForm">
+        <div class="form-group">
+            <label for="client">Nome do Cliente / Empresa</label>
+            <input type="text" id="client" required placeholder="Ex: Unifor Alumni">
+        </div>
+        <div class="form-group">
+            <label for="score">Score de Operação</label>
+            <input type="number" step="0.1" id="score" required placeholder="Ex: 9.5">
+        </div>
+        <div class="form-group">
+            <label for="event">Tipo de Evento</label>
+            <select id="event">
+                <option value="user_login">User Login</option>
+                <option value="payment_checkout">Payment Checkout</option>
+                <option value="metric_analysis">Metric Analysis</option>
+            </select>
+        </div>
+        <button type="submit">Disparar para o Gateway Go</button>
+    </form>
+
+    <div id="response-box"></div>
+</div>
+
+<script>
+    document.getElementById('queueForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const responseBox = document.getElementById('response-box');
+        responseBox.style.display = 'none';
+
+        // 1. Captura os dados da tela
+        const payload = {
+            client: document.getElementById('client').value,
+            score: parseFloat(document.getElementById('score').value),
+            event: document.getElementById('event').value
+        };
+
+        try {
+            // 2. Dispara a requisição HTTP POST para o Gateway em Go (porta 8080)
+            const response = await fetch('http://localhost:8080/enqueue', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                responseBox.className = 'response-box success';
+                responseBox.innerHTML = `<strong>Sucesso (Go)!</strong><br>Status: ${result.status}<br>ID da Task: ${result.task_id}`;
+            } else {
+                responseBox.className = 'response-box error';
+                responseBox.innerText = `Erro do Servidor: ${result.error || 'Falha na validação'}`;
+            }
+        } catch (err) {
+            responseBox.className = 'response-box error';
+            responseBox.innerText = 'Não foi possível conectar ao Gateway Go. Verifique se ele está rodando na porta 8080.';
+        }
+        
+        responseBox.style.display = 'block';
+    });
+</script>
+
+</body>
+</html>
