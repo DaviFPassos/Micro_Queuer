@@ -42,7 +42,7 @@ O sistema opera sob o modelo de **Arquitetura Orientada a Eventos (EDA)** com pr
 ```
 ---
 # 📂 Árvore de Diretórios do Projeto
-
+```
 MicroQueue/
 │
 ├── frontend/
@@ -63,5 +63,5 @@ MicroQueue/
 │
 ├── .gitignore               # Regras severas de governança e proteção contra vazamento de dados
 └── README.md                # Documentação arquitetural do ecossistema
-
+```
 ---
