@@ -37,7 +37,7 @@ func init() {
 
 func main() {
 	fmt.Println("====================================================")
-	fmt.Println("🐹 GO WORKER ACTIVE - V1 (Engine & SQLite Live)")
+	fmt.Println(" GO WORKER ACTIVE - V1 (Engine & SQLite Live)")
 	fmt.Printf(" Monitoring: %s\n", queueDir)
 	fmt.Printf(" Database: %s\n", databasePath)
 	fmt.Println("====================================================")

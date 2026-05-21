@@ -9,29 +9,29 @@ config/secrets/
 .credentials/
 gateway_go/.env
 
-# 2. BANCO DE DADOS LOCAL(SQLite
+# BANCO DE DADOS LOCAL(SQLite
 *.db
 *.db-journal
 *.db-wal
 
-# 3. FILA COMPARTILHADA
+# FILA COMPARTILHADA
 shared_queue/
 shared_queue/*
 !shared_queue/.gitkeep
 
-# 4. LOGS DE PROCESSAMENTO E TELEMETRIA
+# LOGS DE PROCESSAMENTO E TELEMETRIA
 processed_logs/
 processed_logs/*
 !processed_logs/.gitkeep
 
-# 5. LOGS LOCAIS E ARQUIVOS DE DEBUG
+# LOGS LOCAIS E ARQUIVOS DE DEBUG
 *.log
 logs/
 debug.log
 gateway.log
 worker.log
 
-# 6. ECOSSISTEMA GO
+# ECOSSISTEMA GO
 vendor/
 dist/
 build/
@@ -45,14 +45,14 @@ build/
 *.out
 gateway_go/gateway
 
-# 8. COMPORTAMENTO DE TESTES E COBERTURA
+# COMPORTAMENTO DE TESTES E COBERTURA
 coverage/
 *.coverage
 .coverage
 .coverage.*
 htmlcov/
 
-# 9. ARQUIVOS TEMPORÁRIOS E BACKUPS DE EDITORES
+# ARQUIVOS TEMPORÁRIOS E BACKUPS DE EDITORES
 *.tmp
 *.temp
 *.swp

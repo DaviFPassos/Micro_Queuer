@@ -120,7 +120,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	fmt.Println("====================================================")
-	fmt.Println("🚀 GO GATEWAY ACTIVE - V3 (Enhanced Security)")
+	fmt.Println(" GO GATEWAY ACTIVE - V3 (Enhanced Security)")
 	fmt.Printf(" Queue directory: %s\n", queueDir)
 	fmt.Println(" Listening on port :8080 | Micro-Broker Mode")
 	fmt.Println(" Max payload: 5MB | JSON validation enabled")
