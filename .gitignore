@@ -7,26 +7,31 @@
 credentials.json
 config/secrets/
 .credentials/
+gateway_go/.env
 
-# Fila compartilhada com dados em trânsito
+# 2. BANCO DE DADOS LOCAL(SQLite
+*.db
+*.db-journal
+*.db-wal
+
+# 3. FILA COMPARTILHADA
 shared_queue/
 shared_queue/*
 !shared_queue/.gitkeep
 
-# Logs de processamento (podem conter PII/dados sensíveis)
+# 4. LOGS DE PROCESSAMENTO E TELEMETRIA
 processed_logs/
 processed_logs/*
 !processed_logs/.gitkeep
 
-# Logs locais
+# 5. LOGS LOCAIS E ARQUIVOS DE DEBUG
 *.log
 logs/
 debug.log
 gateway.log
 worker.log
 
-
-# Go
+# 6. ECOSSISTEMA GO
 vendor/
 dist/
 build/
@@ -39,24 +44,15 @@ build/
 *.test
 *.out
 gateway_go/gateway
-gateway_go/.env
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-dist/
-build/
-*.egg-info/
-.eggs/
-venv/
-ENV/
-env/
-.venv
-pip-log.txt
-pip-delete-this-directory.txt
+# 8. COMPORTAMENTO DE TESTES E COBERTURA
+coverage/
+*.coverage
+.coverage
+.coverage.*
+htmlcov/
 
+# 9. ARQUIVOS TEMPORÁRIOS E BACKUPS DE EDITORES
 *.tmp
 *.temp
 *.swp
@@ -68,13 +64,8 @@ pip-delete-this-directory.txt
 
 .vscode/
 .idea/
-*.swp
-*.swo
 *.sublime-workspace
 *.sublime-project
-.DS_Store
-Thumbs.db
-
 .DS_Store
 .DS_Store?
 ._*
@@ -82,12 +73,6 @@ Thumbs.db
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-coverage/
-*.coverage
-.coverage
-.coverage.*
-htmlcov/
 
 .git-sync
 .sync-lock

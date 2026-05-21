@@ -43,12 +43,26 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
+	// CONFIGURAÇÃO DE CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Se o navegador mandar um "pedindo permissão" (OPTIONS), responde 200 OK na hora
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	// ────────────────────────────────────────────────────────────────────────
+
 	timestamp := time.Now().UnixNano()
 
 	// Validação de método HTTP
 	if r.Method != http.MethodPost {
 		fmt.Printf("[GATEWAY REJECT] %s - Method %s not allowed\n", time.Now().Format("15:04:05"), r.Method)
-		http.Error(w, `{"error":"Method not allowed. Use POST."}`, http.StatusMethodNotAllowed)
+		w.Header().Set("Content-Type", "application/json") // Garante resposta em JSON
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(`{"error":"Method not allowed. Use POST."}`))
 		return
 	}
 
@@ -59,21 +73,27 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("[GATEWAY ERROR] %s - Body read error: %v\n", time.Now().Format("15:04:05"), err)
-		http.Error(w, `{"error":"Payload too large or invalid body"}`, http.StatusRequestEntityTooLarge)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
+		w.Write([]byte(`{"error":"Payload too large or invalid body"}`))
 		return
 	}
 
-	// Valida tamanho mínimo (evita arquivos vazios inúteis)
+	// Valida tamanho mínimo
 	if len(body) == 0 {
 		fmt.Printf("[GATEWAY ERROR] %s - Empty payload rejected\n", time.Now().Format("15:04:05"))
-		http.Error(w, `{"error":"Payload cannot be empty"}`, http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error":"Payload cannot be empty"}`))
 		return
 	}
 
 	// Valida se é JSON válido
 	if !isValidJSON(body) {
 		fmt.Printf("[GATEWAY ERROR] %s - Invalid JSON format\n", time.Now().Format("15:04:05"))
-		http.Error(w, `{"error":"Payload must be valid JSON"}`, http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error":"Payload must be valid JSON"}`))
 		return
 	}
 
@@ -84,7 +104,9 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	err = os.WriteFile(taskPath, body, 0644)
 	if err != nil {
 		fmt.Printf("[GATEWAY ERROR] %s - Write error: %v\n", time.Now().Format("15:04:05"), err)
-		http.Error(w, `{"error":"Failed to queue task"}`, http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error":"Failed to queue task"}`))
 		return
 	}
 
